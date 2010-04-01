@@ -1,0 +1,71 @@
+<?php
+/*
+dbinfo.php
+Fuse Playout System Management
+This file contains the details for communication with the MySQL and LDAP servers.
+*/
+
+// File Storage Details
+$filepath = "/mnt/musicshare/playout";
+$accesspath = "X:\playout";
+
+// MySQL Server Details
+$mysqlserver = "localhost";
+$mysqlport = "3306";
+$mysqluser = "playoutsystem";
+$mysqlpass = "blah";
+$mysqldb = "playoutsystem";
+
+// LDAP Server Details
+$ldapserver = "192.168.180.116";
+$ldapport = "389";
+$ldapbasedn = "dc=studio,dc=fusefm,dc=co,dc=uk";
+$ldapou = "ou=Fuse";
+$ldaprootdn = "cn=admin,dc=studio,dc=fusefm,dc=co,dc=uk";
+$ldappass = "blah";
+
+// LDAP User Groups. Admins have access to everything, users can only access their own show(s). News users can upload hourly news.
+$admingroups = array("Committee","Tech");
+$usergroups = array("Presenters");
+$newsgroups = array("News");
+
+
+// DO NOT EDIT BELOW THIS LINE...
+
+// MySQL connection
+if ($mysqlport == "") {
+  $mysqlserver = $mysqlserver . ":3306";
+} else {
+  $mysqlserver = $mysqlserver . ":" . $mysqlport;
+}
+
+$mysqllink = mysql_connect($mysqlserver, $mysqluser, $mysqlpass);
+if (!$mysqllink) {
+    die('Not connected to MySQL server: ' . mysql_error());
+}
+
+$db_selected = mysql_select_db($mysqldb, $mysqllink);
+if (!$db_selected) {
+    die ('Database specified cannot be found or read: ' . mysql_error());
+}
+
+// LDAP Connection
+$ldapconn = ldap_connect($ldapserver, $ldapport)
+          or die("Could not connect to specified LDAP server");
+
+if ($ldapconn) {
+
+    ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+    $ldapbind = ldap_bind($ldapconn,$ldaprootdn,$ldappass);
+
+    if (!$ldapbind) {
+        die("LDAP bind failed");
+    }
+}
+
+if ($ldapou <> "") {
+  $ldapbasedn = $ldapou . "," . $ldapbasedn;
+}
+
+?>
